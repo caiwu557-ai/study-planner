@@ -5,7 +5,7 @@ const browserOptions={headless:true,...(process.env.CHROME_PATH?{executablePath:
 (async()=>{
   const browser=await chromium.launch(browserOptions),context=await browser.newContext({viewport:{width:1280,height:960}}),errors=[],unexpected=[],aiRequests=[];
   try {
-    await context.route('https://**',route=>{unexpected.push(route.request().url());return route.abort();});
+    await context.route('https://**',route=>{if(new URL(route.request().url()).origin===new URL(base).origin)return route.continue();unexpected.push(route.request().url());return route.abort();});
     await context.route('https://api.provider.test/**',async route=>{
       const request=route.request(),body=JSON.parse(request.postData());aiRequests.push({url:request.url(),key:request.headers().authorization,body});
       const content=body.messages[0].role==='system'?JSON.stringify({title:'AI 整理任务',course:'示例课程',type:'assignment',planned_date:'',due_date:'',notes:{steps:['阅读资料','整理笔记'],materials:['讲义'],requirements:[],unclear:[]}}):'OK';
