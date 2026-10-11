@@ -1,0 +1,20 @@
+{
+  "format": "study-planner-schedule",
+  "version": 1,
+  "metadata": {
+    "semester_start": "2026-09-07",
+    "semester_weeks": 18,
+    "timezone": "Asia/Shanghai",
+    "source": "示例文件，请由 AI 根据实际课表生成"
+  },
+  "lessons": [
+    {
+      "lesson_date": "2026-09-07",
+      "course": "示例课程",
+      "start_section": 1,
+      "end_section": 2,
+      "teacher": "",
+      "location": ""
+    }
+  ]
+}

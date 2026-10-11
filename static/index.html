@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Study Planner V3</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div id="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark">SP</div>
+        <div class="brand-copy">
+          <div class="brand-name">Study Planner</div>
+          <div class="brand-sub">Dashboard · Calendar · Settings</div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-item active" data-view="home">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          <span>首页</span>
+        </button>
+        <button class="nav-item" data-view="reviews">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+          <span>复习清单</span>
+        </button>
+        <button class="nav-item" data-view="todos">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 5h8"/><path d="M13 12h8"/><path d="M13 19h8"/><path d="m3 17 2 2 4-4"/><rect x="3" y="4" width="6" height="6" rx="1"/></svg>
+          <span>待办清单</span>
+        </button>
+        <button class="nav-item" data-view="ddls">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          <span>到期清单</span>
+        </button>
+        <button class="nav-item" data-view="calendar">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>
+          <span>日历看板</span>
+        </button>
+        <button class="nav-item" data-view="settings">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg>
+          <span>设置</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-spacer"></div>
+      <div class="source-note">
+        <span class="status-dot"></span>
+        <div>
+          <strong>本地数据</strong>
+          <span id="sidebarMeta">正在读取课表…</span>
+        </div>
+      </div>
+      <button class="sidebar-add" id="quickAddBtn" aria-label="添加事项" title="添加事项（Ctrl K）">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg><span class="sidebar-add-label">添加事项</span>
+        <kbd>Ctrl K</kbd>
+      </button>
+      <button class="sidebar-toggle" id="sidebarToggle" aria-label="收起侧边栏" aria-expanded="true" title="收起 / 展开侧边栏">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+    </aside>
+
+    <main class="main">
+      <section id="homeView" class="view active-view">
+        <header class="topbar page-topbar">
+          <div class="date-hero">
+            <div class="eyeline">单日看板</div>
+            <div class="day-switcher">
+              <button class="icon-btn day-nav" id="prevDayBtn" aria-label="前一天"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
+              <div>
+                <h1 id="homeTitle">9月17日</h1>
+                <p id="homeSub">第 2 周 · 周四</p>
+              </div>
+              <button class="icon-btn day-nav" id="nextDayBtn" aria-label="后一天"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+            </div>
+          </div>
+          <!-- 北京时间时钟：应用时间基准是北京墙钟（系统时区可能不同），纯展示不响应点击 -->
+          <div class="home-clock" id="homeClock">
+            <span class="home-clock-time" id="homeClockTime">--:--</span>
+            <span class="home-clock-label">北京时间</span>
+          </div>
+          <div class="topbar-actions">
+            <button class="ghost-btn" id="goTodayBtn">回到今天</button>
+          </div>
+        </header>
+
+        <!-- DDL 警示横幅：<24h 出现，<12h 同时弹出弹窗。由 app.js 按 /api/day 的 ddl_alerts 渲染 -->
+        <div id="ddlBanner" class="ddl-banner hidden"></div>
+
+        <div class="dashboard-grid" id="dashGrid">          <section class="board-card module-card" id="lessonsPanel">
+            <div class="module-head">
+              <span class="module-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="m9 16 2 2 4-4"/></svg></span>
+              <div class="module-count"><strong id="numLessons">0</strong><span>今日课程<small id="footLessons"></small></span></div>
+              <button class="text-btn" id="jumpWeekBtn">看周课表</button>
+            </div>
+            <div id="lessonList" class="list-wrap lesson-list module-list"></div>
+            <button class="module-expand" id="expandLessons">查看全部</button>
+          </section>
+
+          <section class="board-card module-card" id="reviewsPanel">
+            <div class="module-head">
+              <span class="module-icon review"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg></span>
+              <div class="module-count"><strong id="numReviews">0</strong><span>待复习<small id="footReviews"></small></span></div>
+            </div>
+            <div id="reviewList" class="list-wrap task-stack module-list"></div>
+            <button class="module-expand" id="expandReviews">查看全部</button>
+          </section>
+
+          <section class="board-card module-card" id="tasksPanel">
+            <div class="module-head">
+              <span class="module-icon todo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 5h8"/><path d="M13 12h8"/><path d="M13 19h8"/><path d="m3 17 2 2 4-4"/><rect x="3" y="4" width="6" height="6" rx="1"/></svg></span>
+              <div class="module-count"><strong id="numTasks">0</strong><span>待办任务<small id="footTasks"></small></span></div>
+            </div>
+            <div id="taskList" class="list-wrap task-stack module-list"></div>
+            <button class="module-expand" id="expandTasks">查看全部</button>
+          </section>
+
+          <section class="board-card module-card" id="upcomingPanel">
+            <div class="module-head">
+              <span class="module-icon ddl"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span>
+              <div class="module-count"><strong id="numUpcoming">0</strong><span>即将到期<small id="footUpcoming"></small></span></div>
+            </div>
+            <div id="upcomingList" class="list-wrap upcoming-list module-list"></div>
+            <button class="module-expand" id="expandUpcoming">查看全部</button>
+          </section>
+        </div>
+      </section>
+
+      <!-- 复习清单 / 待办清单 / 到期清单：同一套结构，由 app.js 按 view 填内容。
+           默认进来是「仅今日」，可切到「全部事项」或「聚焦某天」。 -->
+      <section id="reviewsView" class="view" data-list-view="review">
+        <header class="topbar page-topbar">
+          <div>
+            <div class="eyeline" id="reviewsEyeline">清单</div>
+            <h1 id="reviewsTitle">复习清单</h1>
+          </div>
+          <div class="topbar-actions" data-list-actions></div>
+        </header>
+        <div class="list-toolbar" data-list-toolbar></div>
+        <div class="task-list-groups list-view-groups" data-list-groups></div>
+      </section>
+
+      <section id="todosView" class="view" data-list-view="todo">
+        <header class="topbar page-topbar">
+          <div>
+            <div class="eyeline" id="todosEyeline">清单</div>
+            <h1 id="todosTitle">待办清单</h1>
+          </div>
+          <div class="topbar-actions" data-list-actions></div>
+        </header>
+        <div class="list-toolbar" data-list-toolbar></div>
+        <div class="task-list-groups list-view-groups" data-list-groups></div>
+      </section>
+
+      <section id="ddlsView" class="view" data-list-view="ddl">
+        <header class="topbar page-topbar">
+          <div>
+            <div class="eyeline" id="ddlsEyeline">清单</div>
+            <h1 id="ddlsTitle">到期清单</h1>
+          </div>
+          <div class="topbar-actions" data-list-actions></div>
+        </header>
+        <div class="list-toolbar" data-list-toolbar></div>
+        <div class="task-list-groups list-view-groups" data-list-groups></div>
+      </section>
+
+        <section class="board-card trash-card" id="trashCard" hidden>
+          <div class="board-head">
+            <div><div class="board-kicker">误删的任务会先放进这里，可以随时恢复</div><h2>回收站</h2></div>
+            <button class="ghost-btn" id="toggleTrash" aria-expanded="false">展开</button>
+          </div>
+          <div id="trashList" class="task-list-groups hidden"></div>
+        </section>
+      <section id="calendarView" class="view">
+        <header class="topbar page-topbar">
+          <div>
+            <div class="eyeline">日历看板</div>
+            <h1 id="calendarTitle">2026年9月</h1>
+          </div>
+          <div class="topbar-actions">
+            <div class="segmented" id="calendarModeSwitch">
+              <button class="seg active" data-mode="week">周课表</button>
+              <button class="seg" data-mode="month">月清单</button>
+            </div>
+            <button class="primary-btn" id="calendarQuickAdd">＋ 添加事项</button>
+          </div>
+        </header>
+
+        <div class="calendar-shell">
+          <div class="calendar-toolbar">
+            <div class="month-nav">
+              <button class="icon-btn" id="prevRange" aria-label="上一个"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
+              <button class="month-title" id="rangeTitle">2026年9月</button>
+              <button class="icon-btn" id="nextRange" aria-label="下一个"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+            </div>
+            <div class="calendar-toolbar-right">
+              <div class="filters" id="calendarFilters">
+                <button class="filter active" data-filter="all">全部</button>
+                <button class="filter" data-filter="review">复习</button>
+                <button class="filter" data-filter="task">任务</button>
+                <button class="filter" data-filter="ddl">DDL</button>
+              </div>
+              <button class="ghost-btn" id="calendarBackHome">打开单日看板</button>
+            </div>
+          </div>
+
+          <div id="monthBoard" class="calendar-board active-board">
+            <div class="weekday-row"><span>周一</span><span>周二</span><span>周三</span><span>周四</span><span>周五</span><span>周六</span><span>周日</span></div>
+            <div id="calendarGrid" class="calendar-grid"></div>
+          </div>
+
+          <div id="weekBoard" class="calendar-board">
+            <div class="week-shell">
+              <div class="week-scroll">
+                <div id="weekGrid" class="week-grid"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="settingsView" class="view">
+        <header class="topbar page-topbar">
+          <div>
+            <div class="eyeline">配置中心</div>
+            <h1>设置</h1>
+          </div>
+        </header>
+
+        <div class="settings-grid">
+          <section class="board-card">
+            <div class="board-head"><div><div class="board-kicker">Schedule</div><h2>载入课表</h2></div></div>
+            <div class="settings-form">
+              <p class="field-help">将课表交给 AI，配合项目内的 study-planner-schedule Skill 生成 JSON 文件，再在这里预览并载入。</p>
+              <a class="skill-link" href="/schedule-skill.md" download="SKILL.md"><span class="skill-link-icon" aria-hidden="true">↗</span><span><strong>下载课表转换 Skill</strong><small>转换规则与 JSON 格式样例，一份文件交给 AI</small></span><span class="skill-link-type">.md</span></a>
+              <label class="schedule-drop-zone" id="scheduleDropZone" for="scheduleFile">
+                <strong>拖入 JSON 课表，或点击选择文件</strong>
+                <input id="scheduleFile" type="file" accept=".json,application/json" />
+              </label>
+              <p class="field-help">只新增课程，重复课程自动跳过；已有主题、任务和复习记录保留。日期和节次不明的课程请先向 AI 补充。</p>
+              <div class="schedule-preview" id="schedulePreview" role="status" aria-live="polite">尚未选择课表文件</div>
+              <div class="form-actions"><button type="button" class="primary-btn" id="importScheduleBtn" disabled>载入课表</button></div>
+            </div>
+          </section>
+          <section class="board-card">
+            <div class="board-head"><div><div class="board-kicker">Appearance</div><h2>外观与配色</h2></div></div>
+            <form id="appearanceForm" class="appearance-layout">
+              <div class="appearance-themes">
+                <h3 class="settings-section-title">选择主题</h3>
+                <div class="theme-presets" id="themePresets"></div>
+              </div>
+              <div class="appearance-controls settings-form">
+              <h3 class="settings-section-title">配色与阅读</h3>
+              <div class="field-row two-col">
+                <label class="field-block"><span id="accentLabel">主色 · 按钮与选中态</span><input type="color" id="accentInput" name="accent" /></label>
+                <label class="field-block" id="accent2Field"><span>辅色 · 小标题与当天强调</span><input type="color" id="accent2Input" name="accent_2" /></label>
+              </div>
+              <p class="settings-inline-note" id="presetNote">预设配色已锁定。主色用于按钮与选中态，辅色用于小标题和当天强调；选择「纯色」可自行调色。</p>
+              <p class="settings-inline-note hidden" id="monoNote">已选「纯色」：只需选一种深色，按钮、选中态、面板浅底都会由它自动衍生，无需再挑第二种颜色。</p>
+              <div class="reading-control">
+                <span id="densityLabel">布局密度</span>
+                <button type="button" class="density-switch" id="densityInput" value="compact" role="switch" aria-checked="false" aria-labelledby="densityLabel" aria-describedby="densityHelp"><span class="density-thumb">紧凑</span></button>
+              </div>
+              <p class="settings-inline-note" id="densityHelp">左右拨动，切换紧凑或舒展布局。</p>
+              <label class="font-control" for="fontScaleInput"><span>字号 <output id="fontSizeValue" for="fontScaleInput">14 px</output></span><input type="range" id="fontScaleInput" name="font_scale" min="12" max="20" step="1" value="14" /><span class="range-labels"><small>12 px</small><small>20 px</small></span></label>
+              <p class="settings-inline-note">拖动即可全局预览；保存后记住配色、密度与字号。</p>
+              <div class="form-actions"><button type="submit" class="primary-btn">保存外观</button></div>
+              </div>
+            </form>
+          </section>
+
+          <section class="board-card">
+            <div class="board-head"><div><div class="board-kicker">Review</div><h2>复习策略</h2></div></div>
+            <form id="reviewForm" class="settings-form">
+              <label class="field-block"><span>复习间隔（天，英文逗号分隔）</span><input id="reviewOffsetsInput" placeholder="1,3,7,14,30" /></label>
+              <p class="field-help">保存后，新生成的复习链会使用这组间隔。</p>
+              <div class="form-actions"><button type="submit" class="primary-btn">保存复习设置</button></div>
+            </form>
+          </section>
+
+          <section class="board-card">
+            <div class="board-head"><div><div class="board-kicker">AI</div><h2>DeepSeek API</h2></div></div>
+            <form id="aiForm" class="settings-form">
+              <label class="field-block"><span>Base URL</span><input id="aiBaseUrlInput" placeholder="https://api.deepseek.com" /></label>
+              <label class="field-block"><span>Model</span><input id="aiModelInput" placeholder="deepseek-v4-flash" /></label>
+              <label class="field-block"><span>API Key</span><input id="aiKeyInput" type="password" placeholder="仅在需要时填写" autocomplete="off" /></label>
+              <div class="settings-inline-note" id="apiConfiguredNote">未配置 API Key</div>
+              <div class="settings-inline-note" id="apiTestStatus" role="status" aria-live="polite">未测试连接</div>
+              <p class="field-help">保存后自动测试。单独测试可使用尚未保存的配置，只发送一条简短测试消息，不发送课表或任务。</p>
+              <div class="form-actions dual-actions">
+                <button type="button" class="ghost-btn" id="clearApiKeyBtn">清除 Key</button>
+                <button type="button" class="secondary-btn" id="testApiBtn">测试连接</button>
+                <button type="submit" class="primary-btn">保存 AI 设置</button>
+              </div>
+            </form>
+          </section>
+          <section class="board-card" id="shortcutsCard" tabindex="-1">
+            <div class="board-head"><div><div class="board-kicker">Keyboard</div><h2>快捷键</h2></div><span class="shortcut-tip">按 ? 查看</span></div>
+            <div id="shortcutList" class="shortcut-list"></div>
+            <p class="field-help">输入文字时暂停页面切换快捷键。Ctrl 在 Mac 上对应 ⌘；字号滑块保留方向键调整。</p>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+  <aside class="day-drawer" id="dayDrawer" aria-hidden="true">
+    <div class="drawer-head">
+      <div>
+        <div class="eyeline" id="drawerWeekday">日期</div>
+        <h2 id="drawerDate">9月14日</h2>
+      </div>
+      <button class="icon-btn" id="closeDrawer" aria-label="关闭"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+    </div>
+    <div id="drawerContent" class="drawer-content"></div>
+  </aside>
+
+  <div class="modal-backdrop" id="modalBackdrop"></div>
+  <section class="modal" id="quickAddModal" aria-hidden="true">
+    <div class="modal-head">
+      <div>
+        <div class="eyeline">快速录入</div>
+        <h2 id="taskModalTitle">添加事项</h2>
+      </div>
+      <button class="icon-btn" id="closeModal" aria-label="关闭"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+    </div>
+
+    <div class="ai-box">
+      <div class="ai-title-row">
+        <div>
+          <strong>一句话解析</strong>
+          <span id="aiStatus">检查 DeepSeek 配置…</span>
+        </div>
+        <button class="secondary-btn" id="aiParseBtn">解析</button>
+      </div>
+      <textarea id="aiInput" rows="3" placeholder="例如：下周五交课程报告，周三先完成初稿"></textarea>
+      <p class="field-help">AI 会整理任务、日期和备注，将步骤、材料、注意事项分段列出；确认添加后才会写入任务。</p>
+    </div>
+
+    <form id="taskForm" class="task-form">
+      <div class="field full">
+        <label for="taskTitle">任务</label>
+        <input id="taskTitle" name="title" required placeholder="要做什么？" />
+      </div>
+      <div class="field">
+        <label for="taskType">类型</label>
+        <select id="taskType" name="type">
+          <option value="task">任务</option>
+          <option value="assignment">作业</option>
+          <option value="ddl">DDL</option>
+          <option value="other">其他</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="taskCourse">课程</label>
+        <select id="taskCourse" name="course"><option value="">不关联课程</option></select>
+      </div>
+      <div class="field">
+        <label for="taskPlanned">计划执行</label>
+        <input type="date" id="taskPlanned" name="planned_date" />
+      </div>
+      <div class="field">
+        <label for="taskDue">截止日期</label>
+        <input type="date" id="taskDue" name="due_date" />
+      </div>
+      <div class="field">
+        <label for="taskDueTime">截止时间<span class="field-optional">（可选，留空＝当天结束前）</span></label>
+        <input type="time" id="taskDueTime" />
+      </div>
+      <div class="field full">
+        <label for="taskNotes">备注</label>
+        <textarea id="taskNotes" name="notes" rows="6" placeholder="可留空；AI 解析后会按步骤、材料、注意事项分段整理"></textarea>
+      </div>
+      <div class="form-error" id="taskFormError" hidden role="alert"></div>
+      <div class="form-actions">
+        <button type="button" class="ghost-btn" id="cancelTask">取消</button>
+        <button type="submit" class="primary-btn">添加任务</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="modal" id="lessonModal" aria-hidden="true">
+    <div class="modal-head">
+      <div>
+        <div class="eyeline">课程管理</div>
+        <h2 id="lessonModalTitle">添加课程</h2>
+      </div>
+      <button class="icon-btn" id="closeLessonModal" aria-label="关闭"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+    </div>
+    <form id="lessonForm" class="task-form">
+      <div class="field full">
+        <label for="lessonCourse">课程名称</label>
+        <input id="lessonCourse" list="courseList" required placeholder="例如：示例课程" />
+        <datalist id="courseList"></datalist>
+      </div>
+      <div class="field">
+        <label for="lessonDate">上课日期（改日期即为调课）</label>
+        <input type="date" id="lessonDate" required />
+      </div>
+      <div class="field">
+        <label for="lessonLocation">地点</label>
+        <input id="lessonLocation" placeholder="可留空" />
+      </div>
+      <div class="field">
+        <label for="lessonStart">开始节</label>
+        <select id="lessonStart"></select>
+      </div>
+      <div class="field">
+        <label for="lessonEnd">结束节</label>
+        <select id="lessonEnd"></select>
+      </div>
+      <div class="field">
+        <label for="lessonTeacher">教师</label>
+        <input id="lessonTeacher" placeholder="可留空" />
+      </div>
+      <div class="field full">
+        <label for="lessonTopic">本节主题（可选，填写后自动生成复习链）</label>
+        <input id="lessonTopic" placeholder="例如：疫苗与免疫预防" />
+      </div>
+      <div class="form-error" id="lessonFormError" hidden role="alert"></div>
+      <div class="form-actions dual-actions">
+        <button type="button" class="ghost-btn danger hidden" id="deleteLessonBtn">删除课程</button>
+        <div class="form-actions-inline">
+          <button type="button" class="ghost-btn" id="cancelLesson">取消</button>
+          <button type="submit" class="primary-btn">保存课程</button>
+        </div>
+      </div>
+    </form>
+  </section>
+
+  <!-- DDL <12h 的提醒：右下角弹窗，与首页横幅同时出现 -->
+  <aside class="ddl-popup" id="ddlPopup" aria-hidden="true">
+    <div class="ddl-popup-head">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+      <span id="ddlPopupTitle">有 DDL 快到了</span>
+    </div>
+    <ul class="ddl-banner-list" id="ddlPopupList"></ul>
+    <div class="ddl-popup-actions">
+      <button class="ghost-btn" id="ddlPopupLater">稍后再说</button>
+      <button class="primary-btn" id="ddlPopupGo">看到期清单</button>
+    </div>
+  </aside>
+
+  <div class="toast" id="toast"></div>
+  <div class="action-toast" id="actionToast" role="status"><svg class="action-toast-edge" aria-hidden="true"><rect x="1" y="1" pathLength="100" /></svg><span class="action-toast-copy"></span><span class="action-toast-countdown" aria-hidden="true">8s</span><button class="action-toast-btn">撤销</button></div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

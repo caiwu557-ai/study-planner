@@ -1,0 +1,32 @@
+# Personal runtime data and secrets. Only the empty seed belongs in Git.
+data/*
+!data/seed_schedule.json
+*.db
+*.db-wal
+*.db-shm
+*.sqlite*
+*.bin
+.env
+.env.*
+*secrets*
+*.log
+
+# Local builds / private archives / dependencies
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+node_modules/
+build/
+dist/
+delivery/
+backups/
+shots/
+*.exe
+*.zip
+*.pkg
+.DS_Store
+Thumbs.db
+
+# Local installation instructions and machine-specific configuration
+AI-INSTALL-RESULT.md
