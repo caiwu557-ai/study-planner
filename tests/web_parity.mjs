@@ -1,0 +1,14 @@
+import fs from 'node:fs';
+import {handle,replan} from '../site/web/engine.js';
+const s=JSON.parse(fs.readFileSync(0,'utf8')),out=[];
+const snapshot=()=>out.push(structuredClone({lessons:s.lessons,reviews:s.reviews,tasks:s.tasks}));
+handle(s,'/api/lessons/1/topic','POST',{topic:'复习主题'},undefined,'2026-09-14');snapshot();
+handle(s,'/api/reviews/1/complete','POST',{completed_date:'2026-09-17'},undefined,'2026-09-14');snapshot();
+handle(s,'/api/reviews/1/undo','POST',{},undefined,'2026-09-14');snapshot();
+replan(s,'2026-09-22');snapshot();
+handle(s,'/api/tasks/1/status','POST',{status:'completed'});snapshot();
+handle(s,'/api/tasks/1/status','POST',{status:'deleted'});snapshot();
+handle(s,'/api/tasks/1/restore','POST',{});snapshot();
+handle(s,'/api/lessons/1/topic','POST',{topic:''});snapshot();
+handle(s,'/api/lessons/1','DELETE',{});snapshot();
+console.log(JSON.stringify(out));

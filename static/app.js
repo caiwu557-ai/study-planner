@@ -1675,7 +1675,7 @@ function liveApplyTheme() {
   });
 }
 
-function renderSettings() {
+function renderAppearanceSettings() {
   const app = state.settings.appearance;
   currentThemeKey = THEMES[app.theme_name] ? app.theme_name : 'custom';
   const preset = THEMES[app.theme_name];
@@ -1701,11 +1701,18 @@ function renderSettings() {
   updateReadingControls();
   document.querySelectorAll('.theme-swatch').forEach(x => x.classList.toggle('active', x.dataset.theme === app.theme_name));
   document.querySelectorAll('.theme-swatch').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.theme === app.theme_name)));
-  document.getElementById('reviewOffsetsInput').value = (state.settings.review_offsets || []).join(', ');
-  document.getElementById('aiBaseUrlInput').value = state.settings.ai.base_url || '';
-  document.getElementById('aiModelInput').value = state.settings.ai.model || '';
-  document.getElementById('aiKeyInput').value = '';
-  document.getElementById('apiConfiguredNote').textContent = state.settings.ai.api_key_configured ? 'API Key 已配置' : '未配置 API Key';
+}
+
+function renderSettings(section = 'all') {
+  // Saving one form must preserve unfinished input in the other settings forms.
+  if (section === 'all' || section === 'appearance') renderAppearanceSettings();
+  if (section === 'all' || section === 'review') document.getElementById('reviewOffsetsInput').value = (state.settings.review_offsets || []).join(', ');
+  if (section === 'all' || section === 'ai') {
+    document.getElementById('aiBaseUrlInput').value = state.settings.ai.base_url || '';
+    document.getElementById('aiModelInput').value = state.settings.ai.model || '';
+    document.getElementById('aiKeyInput').value = '';
+    document.getElementById('apiConfiguredNote').textContent = state.settings.ai.api_key_configured ? 'API Key 已配置' : '未配置 API Key';
+  }
 }
 
 async function saveAppearance(e) {
@@ -1719,7 +1726,7 @@ async function saveAppearance(e) {
   };
   try {
     state.settings = await api('/api/settings/appearance', { method: 'POST', body: JSON.stringify(payload) });
-    applyAppearance(state.settings.appearance); renderSettings(); toast('外观设置已保存');
+    applyAppearance(state.settings.appearance); renderSettings('appearance'); toast('外观设置已保存');
   } catch (err) { toast(err.message); }
 }
 
@@ -1729,7 +1736,7 @@ async function saveReviewSettings(e) {
   const review_offsets = raw.split(',').map(x => x.trim()).filter(Boolean).map(Number);
   try {
     state.settings = await api('/api/settings/review', { method: 'POST', body: JSON.stringify({ review_offsets }) });
-    renderSettings(); toast('复习设置已保存');
+    renderSettings('review'); toast('复习设置已保存');
   } catch (err) { toast(err.message); }
 }
 
@@ -1742,7 +1749,7 @@ async function saveAISettings(e) {
   };
   try {
     state.settings = await api('/api/settings/ai', { method: 'POST', body: JSON.stringify(payload) });
-    renderSettings();
+    renderSettings('ai');
     document.getElementById('aiStatus').textContent = state.settings.ai.api_key_configured ? `已配置 · ${state.settings.ai.model}` : '未配置 API Key · 仍可手动录入';
     toast('AI 设置已保存');
     await testAIConnection(true);
@@ -1752,7 +1759,7 @@ async function saveAISettings(e) {
 async function clearApiKey() {
   try {
     state.settings = await api('/api/settings/ai', { method: 'POST', body: JSON.stringify({ clear_key: true, base_url: document.getElementById('aiBaseUrlInput').value.trim(), model: document.getElementById('aiModelInput').value.trim() }) });
-    renderSettings();
+    renderSettings('ai');
     document.getElementById('aiStatus').textContent = state.settings.ai.api_key_configured ? `已配置 · ${state.settings.ai.model}` : '未配置 API Key · 仍可手动录入';
     toast(state.settings.ai.api_key_configured ? '本地密钥已清除，环境变量密钥仍有效' : 'API Key 已清除');
     document.getElementById('apiTestStatus').textContent = '未测试连接';

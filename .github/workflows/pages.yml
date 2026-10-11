@@ -1,8 +1,8 @@
-name: Deploy interactive demo
+name: Deploy browser app and demo
 on:
   push:
     branches: [main]
-    paths: ['demo/**', 'static/**', 'server.py', '.agents/skills/study-planner-schedule/**', '.github/workflows/pages.yml']
+    paths: ['web/**', 'demo/**', 'static/**', 'server.py', '.agents/skills/study-planner-schedule/**', '.github/workflows/pages.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -22,6 +22,12 @@ jobs:
       - uses: actions/configure-pages@v5
       - name: Build isolated demo using the real frontend
         run: python demo/build.py site
+      - name: Build full browser application
+        run: python web/build.py site
+      - name: Check browser scheduling and backup rules
+        run: node tests/web_engine.mjs
+      - name: Compare browser rules with the local edition
+        run: python tests/web_parity.py "$(command -v node)"
       - uses: actions/upload-pages-artifact@v4
         with:
           path: site
