@@ -1,6 +1,7 @@
 /* The desktop frontend stays unchanged; only demo requests use fictional, in-memory data. */
 (() => {
   const seed = window.DEMO_SEED, copy = x => JSON.parse(JSON.stringify(x));
+  try{localStorage.setItem('sp_rail_collapsed',innerWidth<=760?'1':'0')}catch{}
   const NativeDate = Date, fixed = new NativeDate(seed.today + 'T10:00:00+08:00').getTime();
   window.Date = class extends NativeDate { constructor(...args) { super(...(args.length ? args : [fixed])); } static now() { return fixed; } };
   let model;
@@ -46,6 +47,6 @@
     throw Error('这项操作请在完整版体验，演示页不会修改真实数据。');
   }
   window.fetch=async (path,opts={})=>{const url=new URL(path,location.href);if(!url.pathname.startsWith('/api/'))return nativeFetch(path,opts);try {if(opts.signal?.aborted)throw new DOMException('Aborted','AbortError');return new Response(JSON.stringify(handle(url,opts.method||'GET',opts.body?JSON.parse(opts.body):{})),{headers:{'Content-Type':'application/json'}});}catch(e){if(e.name==='AbortError')throw e;return new Response(JSON.stringify({error:e.message}),{status:400,headers:{'Content-Type':'application/json'}});}};
-  const style=document.createElement('style');style.textContent='.demo-label{position:fixed;right:18px;bottom:12px;z-index:200;font-size:11px;background:#fff;color:#6d7789;border:1px solid #dce3ee;padding:5px 12px;border-radius:20px;pointer-events:none}.demo-cursor{position:fixed;z-index:500;pointer-events:none;width:22px;height:22px;border:3px solid #2e5fa3;border-radius:50%;background:#fff9;box-shadow:0 0 0 7px #2e5fa31a;transition:top .7s ease,left .7s ease;left:50%;top:50%}.demo-cursor.click{background:#e8c21c;box-shadow:0 0 0 13px #e8c21c33}';document.head.append(style);
+  const style=document.createElement('style');style.textContent='@media(max-width:760px){.lesson-card{grid-template-columns:1fr}.lesson-time{display:flex;gap:10px}.topic-ready button,.topic-prompt-row button{flex-shrink:0;white-space:nowrap}.topic-editor{grid-template-columns:1fr}}.demo-label{position:fixed;right:18px;bottom:12px;z-index:200;font-size:11px;background:#fff;color:#6d7789;border:1px solid #dce3ee;padding:5px 12px;border-radius:20px;pointer-events:none}.demo-cursor{position:fixed;z-index:500;pointer-events:none;width:22px;height:22px;border:3px solid #2e5fa3;border-radius:50%;background:#fff9;box-shadow:0 0 0 7px #2e5fa31a;transition:top .7s ease,left .7s ease;left:50%;top:50%}.demo-cursor.click{background:#e8c21c;box-shadow:0 0 0 13px #e8c21c33}';document.head.append(style);
   document.addEventListener('DOMContentLoaded',()=>{const label=document.createElement('div');label.className='demo-label';label.textContent=`虚构数据演示 · ${seed.today} · 不连接 AI`;document.body.append(label);const key=document.querySelector('#aiKeyInput');if(key){key.disabled=true;key.placeholder='演示页无需密钥'} });
 })();

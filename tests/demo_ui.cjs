@@ -65,6 +65,12 @@ const path = require('node:path');
     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
     if(process.env.DEMO_SCREENSHOT)await page.screenshot({path:process.env.DEMO_SCREENSHOT,fullPage:true});
     assert.deepEqual(errors,[]);
+    const phone=await browser.newPage({viewport:{width:393,height:852}});
+    await phone.goto(base+'app/');
+    await phone.locator('#lessonList .lesson-title').first().waitFor();
+    assert.equal(await phone.locator('#app').getAttribute('class'),'rail-collapsed');
+    assert.equal(await phone.locator('.lesson-card').first().evaluate(e=>getComputedStyle(e).gridTemplateColumns.split(' ').length),1);
+    await phone.close();
     // CSS and application code in the shipped demo must be exactly the desktop files.
     for(const name of ['styles.css','app.js','core.js']) {
       const response=await page.request.get(base+'app/'+name);
