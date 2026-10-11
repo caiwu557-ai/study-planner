@@ -8,7 +8,7 @@
 
 [**打开正式网页版 →**](https://caiwu557-ai.github.io/study-planner/web/) · [✨ 功能展示与交互演示](https://caiwu557-ai.github.io/study-planner/)
 
-正式网页版支持课表导入、真实复习安排、待办、到期、回收站和 AI 解析；个人记录保存在当前浏览器。展示页继续使用虚构数据，供观看与试用，和个人存档隔离。
+正式网页版支持课表导入、真实复习安排、待办、到期、回收站和 AI 解析；个人记录保存在当前浏览器。宣传页使用虚构数据展示功能，试用入口直接通向正式网页版；自动演示与个人存档隔离。
 
 [⬇ 下载 Windows 使用版](https://github.com/caiwu557-ai/study-planner/releases/latest/download/StudyPlanner-Windows-x64.zip) · [🤖 交给 AI 安装](#交给-ai-安装) · [📖 查看使用指南](docs/USER_GUIDE.md)
 
