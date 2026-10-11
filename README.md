@@ -6,6 +6,10 @@
 
 本地运行 · 无需注册 · AI 可选 · Windows 使用版
 
+[**✨ 在线交互体验，无需安装 →**](https://caiwu557-ai.github.io/study-planner/)
+
+展示页使用虚构数据，可切换周课表、月清单，体验任务勾选、添加、删除撤销与配色。完整的导入、AI 与提醒功能请下载使用版。
+
 [⬇ 下载 Windows 使用版](https://github.com/caiwu557-ai/study-planner/releases/latest/download/StudyPlanner-Windows-x64.zip) · [🤖 交给 AI 安装](#交给-ai-安装) · [📖 查看使用指南](docs/USER_GUIDE.md)
 
 </div>
