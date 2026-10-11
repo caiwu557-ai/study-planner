@@ -16,6 +16,7 @@ const base=process.argv[2]||'http://127.0.0.1:18770/';
     await p.waitForFunction(n=>document.querySelector('#guideCount').textContent===`${n} / 14`&&!document.querySelector('#guideNext').disabled,i+1);
     assert.ok(await p.locator(targets[i]).first().isVisible(),`step ${i+1} width ${width}`);
     assert.ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`overflow step ${i+1}`);
+    if(i===1){await p.locator('.topic-editor .topic-input').fill('未保存的主题');p.once('dialog',d=>d.dismiss());await p.locator('#guideNext').click();assert.equal(await p.locator('#guideCount').textContent(),'2 / 14');p.once('dialog',d=>d.accept());}
     if(i===3){
      await p.locator('#guideNext').focus();await p.keyboard.press('Shift+Tab');assert.equal(await p.evaluate(()=>document.activeElement.id),'guidePrev');
      await p.locator('#lessonCourse').fill('尚未保存');

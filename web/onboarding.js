@@ -62,7 +62,7 @@ export async function setupOnboarding() {
       if(action==='add')document.getElementById('quickAddBtn').click();
       target=await waitFor(selector)||container;
       if(target){target.classList.add('guide-target');target.scrollIntoView({block:'center',behavior:'instant'});}
-      forms=new Map([...document.querySelectorAll('#taskForm,#lessonForm,.inline-task-editor')].filter(visible).map(f=>[f,values(f)]));
+      forms=new Map([...document.querySelectorAll('#taskForm,#lessonForm,.inline-task-editor,.topic-editor')].filter(visible).map(f=>[f,values(f)]));
       await persist('running');
       document.getElementById('guideNext').focus({preventScroll:true});
     }catch(e){toast(`指引暂时无法展开：${e.message}`);}
