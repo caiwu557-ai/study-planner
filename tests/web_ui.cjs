@@ -1,3 +1,8 @@
+async function emptyFixture(p){
+  await p.locator('#guideWelcome[open]').waitFor();await p.locator('#guideSkip').click();
+  await p.evaluate(async()=>{const {transact}=await import('./storage.js');const {emptyState}=await import('./engine.js');await transact(s=>{Object.keys(s).forEach(k=>delete s[k]);Object.assign(s,emptyState());});});
+  await p.reload();await p.waitForFunction(()=>document.querySelector('#sidebarMeta').textContent.includes('浏览器存档'));
+}
 const {chromium}=require('playwright');
 const assert=require('node:assert/strict');
 const base=process.argv[2]||'http://127.0.0.1:18770/';
@@ -13,7 +18,7 @@ const browserOptions={headless:true,...(process.env.CHROME_PATH?{executablePath:
     });
     const p=await context.newPage();p.on('pageerror',e=>errors.push(e.message));
     p.on('request',r=>{if(new URL(r.url()).pathname.startsWith('/api/'))unexpected.push(r.url());});
-    await p.goto(base+'web/');await p.waitForFunction(()=>document.querySelector('#sidebarMeta').textContent.includes('浏览器存档'));
+    await p.goto(base+'web/');await p.waitForFunction(()=>document.querySelector('#sidebarMeta').textContent.includes('浏览器存档'));await emptyFixture(p);
     assert.equal(await p.locator('#numLessons').textContent(),'0');
     const request=async(page,path,payload,method='POST')=>page.evaluate(async({path,payload,method})=>{const res=await fetch(path,{method,body:method==='GET'?undefined:JSON.stringify(payload)});return {ok:res.ok,data:await res.json()};},{path,payload,method});
     const today=await p.evaluate(async()=>{const {bjISO}=await import('./core.js');return bjISO();});
@@ -37,7 +42,7 @@ const browserOptions={headless:true,...(process.env.CHROME_PATH?{executablePath:
     const row=p.locator('#todosView .task-item').filter({hasText:title});await row.locator('.edit-task').click();await row.locator('[name=title]').fill('修改后任务');await row.locator('button[type=submit]').click();
     const edited=p.locator('#todosView .task-item').filter({hasText:'修改后任务'});await edited.locator('.delete-task').click();await p.locator('#toggleTrash').click();await p.locator('#trashList button').first().click();await edited.waitFor();
     // Separate browser contexts have independent IndexedDB, demo data stays isolated.
-    const other=await browser.newContext();const isolated=await other.newPage();await isolated.goto(base+'web/');await isolated.waitForFunction(()=>document.querySelector('#sidebarMeta').textContent.includes('浏览器存档'));
+    const other=await browser.newContext();const isolated=await other.newPage();await isolated.goto(base+'web/');await isolated.waitForFunction(()=>document.querySelector('#sidebarMeta').textContent.includes('浏览器存档'));await emptyFixture(isolated);
     assert.equal(await isolated.locator('#numLessons').textContent(),'0');assert.equal((await request(isolated,'/api/tasks',{},'GET')).data.tasks.length,0);await other.close();
     const beforeDemo=(await request(p,'/api/tasks',{},'GET')).data.tasks.length;const demo=await context.newPage();await demo.goto(base+'app/');await demo.locator('#lessonList .lesson-title').first().waitFor();
     assert.ok(Number(await demo.locator('#numLessons').textContent())>0);await demo.close();assert.equal((await request(p,'/api/tasks',{},'GET')).data.tasks.length,beforeDemo);
@@ -77,7 +82,7 @@ const browserOptions={headless:true,...(process.env.CHROME_PATH?{executablePath:
     await context.setOffline(false);await p.locator('[data-view=settings]').click();await p.locator('#clearApiKeyBtn').click();await p.locator('#apiConfiguredNote').filter({hasText:'未配置'}).waitFor();await p.reload();assert.equal((await request(p,'/api/settings',{},'GET')).data.ai.api_key_configured,false);
     const manifest=await (await p.request.get(base+'web/manifest.json')).json();assert.equal(manifest.display,'standalone');assert.equal(manifest.scope,'./');
     const phoneContext=await browser.newContext({viewport:{width:393,height:852}}),phone=await phoneContext.newPage();phone.on('pageerror',e=>errors.push(e.message));
-    await phone.goto(base+'web/');await phone.waitForFunction(()=>document.querySelector('#sidebarMeta').textContent.includes('浏览器存档'));
+    await phone.goto(base+'web/');await phone.waitForFunction(()=>document.querySelector('#sidebarMeta').textContent.includes('浏览器存档'));await emptyFixture(phone);
     assert.equal(await phone.locator('#app').getAttribute('class'),'rail-collapsed');await request(phone,'/api/schedule/import',schedule);await request(phone,'/api/lessons/1/topic',{topic:'手机课表与复习'});await request(phone,'/api/tasks',{title:'手机长标题任务用于验证清单换行显示',planned_date:today,due_date:today});await phone.reload();await phone.waitForFunction(()=>document.querySelector('#sidebarMeta').textContent.includes('浏览器存档'));
     for(const view of ['home','reviews','todos','ddls','calendar','settings']){await phone.locator(`[data-view=${view}]`).click();assert.ok(await phone.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`Mobile overflow: ${view}`);}
     await phone.locator('[data-view=calendar]').click();await phone.locator('[data-mode=month]').click();assert.ok(await phone.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));

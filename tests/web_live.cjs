@@ -10,7 +10,7 @@ const base=process.argv[2]||'https://caiwu557-ai.github.io/study-planner/';
     const p=await browser.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));await p.goto(base+'web/');await p.waitForFunction(()=>document.querySelector('#sidebarMeta').textContent.includes('浏览器存档'));
     await p.evaluate(()=>navigator.serviceWorker.ready);await p.waitForFunction(()=>navigator.serviceWorker.controller);
     const cdp=await p.context().newCDPSession(p);assert.deepEqual((await cdp.send('Page.getInstallabilityErrors')).installabilityErrors,[]);
-    for(const file of ['app.js','core.js','engine.js','storage.js','entry.js','manifest.json','icon.svg']){
+    for(const file of ['app.js','core.js','engine.js','storage.js','entry.js','onboarding.js','manifest.json','icon.svg']){
       const response=await p.request.get(base+'web/'+file);assert.equal(response.status(),200);
       assert.equal((await response.text()).replace(/\r\n/g,'\n'),fs.readFileSync(path.join(__dirname,'../site/web',file),'utf8').replace(/\r\n/g,'\n'),`Published file differs: ${file}`);
     }

@@ -278,11 +278,12 @@ function bindUI() {
     if (e.key !== 'Tab') return;
     const modal = document.querySelector('.modal.open');
     if (!modal) return;
-    const nodes = [...modal.querySelectorAll(FOCUSABLE)].filter(n => n.offsetParent !== null);
+    const guide = document.querySelector('#guidePanel:not([hidden])');
+    const nodes = [...modal.querySelectorAll(FOCUSABLE), ...(guide?.querySelectorAll(FOCUSABLE) || [])].filter(n => n.offsetParent !== null);
     if (!nodes.length) return;
     const first = nodes[0];
     const last = nodes[nodes.length - 1];
-    const inside = modal.contains(document.activeElement);
+    const inside = modal.contains(document.activeElement) || guide?.contains(document.activeElement);
     if (e.shiftKey && (!inside || document.activeElement === first)) {
       e.preventDefault();
       last.focus();
@@ -1810,8 +1811,8 @@ function bindScheduleImport() {
       const result = await api('/api/schedule/preview', { method: 'POST', body: JSON.stringify(data) });
       if (token !== selection) return;
       schedule = data;
-      preview.textContent = `${file.name}\n${result.total} 节课程 · ${result.start_date} 至 ${result.end_date}\n可新增 ${result.added} 节 · 重复 ${result.skipped} 节（跳过）\n${result.sample.map(x => `${x.lesson_date} · ${x.course} · ${x.start_section}–${x.end_section}节`).join('\n')}`;
-      button.disabled = !result.added;
+      preview.textContent = `${file.name}\n${result.total} 节课程 · ${result.start_date} 至 ${result.end_date}\n可新增 ${result.added} 节 · 重复 ${result.skipped} 节（跳过）${result.replaced_examples ? `\n将替换 ${result.replaced_examples} 节示例课程及其复习、示例任务；个人记录保留。` : ''}\n${result.sample.map(x => `${x.lesson_date} · ${x.course} · ${x.start_section}–${x.end_section}节`).join('\n')}`;
+      button.disabled = !result.added && !result.replaced_examples;
     } catch (err) { if (token === selection) preview.textContent = `无法载入：${err.message}`; }
   }
   input.onchange = () => readFile(input.files[0]);
@@ -1825,7 +1826,8 @@ function bindScheduleImport() {
     input.disabled = true;
     try {
       const result = await api('/api/schedule/import', { method: 'POST', body: JSON.stringify(schedule) });
-      preview.textContent = `载入完成：新增 ${result.added} 节，跳过 ${result.skipped} 节重复课程。已有主题和复习记录已保留。`;
+      preview.textContent = `载入完成：新增 ${result.added} 节，跳过 ${result.skipped} 节重复课程。${result.replaced_examples ? `已替换 ${result.replaced_examples} 节示例课程及示例练习。` : ''}个人课程、主题和复习记录已保留。`;
+      window.dispatchEvent(new CustomEvent('schedule-imported', { detail: result }));
       schedule = null;
       const [meta, courses] = await Promise.all([api('/api/meta'), api('/api/courses')]);
       state.meta = meta;

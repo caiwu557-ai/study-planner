@@ -57,6 +57,7 @@ window.addEventListener('online',storageStatus);window.addEventListener('offline
 try {
   await transact(()=>true);await storageStatus();
   await import('./app.js');
+  const {setupOnboarding}=await import('./onboarding.js');await setupOnboarding();
   if('serviceWorker' in navigator){
     const registration=await navigator.serviceWorker.register('./sw.js',{scope:'./'});
     const offer=()=>{if(registration.waiting)document.getElementById('updateBtn').classList.remove('hidden');};offer();

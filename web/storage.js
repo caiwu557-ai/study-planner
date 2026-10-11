@@ -1,4 +1,4 @@
-import {emptyState, handle, settings, aiConfig, text, date, taskPayload, backup, validateBackup} from './engine.js';
+import {emptyState, seedOnboarding, handle, settings, aiConfig, text, date, taskPayload, backup, validateBackup} from './engine.js';
 import {bjISO} from './core.js';
 
 const nativeFetch = window.fetch.bind(window);
@@ -26,6 +26,7 @@ export async function transact(run) {
       if(--remaining)return;
       try {
         const s=values.state||emptyState();
+        if(!values.state)seedOnboarding(s);
         if(s.version!==1)throw new Error('存档版本不支持，请保留数据并使用匹配版本。');
         const before=JSON.stringify(s);
         result=run(s,values.apiKey||'',values.recovery||[],store);

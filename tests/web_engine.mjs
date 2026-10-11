@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {emptyState,handle,backup,validateBackup,complete,undo,replan,validateSchedule} from '../site/web/engine.js';
+import {emptyState,seedOnboarding,handle,backup,validateBackup,complete,undo,replan,validateSchedule} from '../site/web/engine.js';
 const today='2026-09-14';
 const s=emptyState();
 const call=(path,p={},method='POST',query='')=>handle(s,path,method,p,new URLSearchParams(query),today);
@@ -29,3 +29,19 @@ const malformed=structuredClone(schedule);malformed.lessons.push({...schedule.le
 for(const due of ['2026-02-30','2026-09-14T25:00','2026-09-14T18:60'])assert.throws(()=>call('/api/tasks',{title:'坏日期',due_date:due}));
 call('/api/lessons/1',{},'DELETE');assert.equal(s.reviews.length,0);
 console.log('Browser engine: import, review shift/undo, lists, tasks, dates and backup validation passed.');
+const sample=emptyState();seedOnboarding(sample,today);seedOnboarding(sample,today);
+assert.equal(sample.lessons.length,7);assert.equal(sample.tasks.length,4);
+assert.deepEqual(validateBackup(backup(sample)),sample);
+handle(sample,'/api/tasks','POST',{title:'自己的任务'},new URLSearchParams(),today);
+handle(sample,'/api/lessons','POST',{course:'自己的课程',lesson_date:today,start_section:8,end_section:9,topic:'自己的主题'},new URLSearchParams(),today);
+const personalReviews=sample.reviews.filter(r=>r.lesson_id===8);
+const original=JSON.stringify(sample);
+assert.equal(handle(sample,'/api/schedule/preview','POST',schedule,new URLSearchParams(),today).replaced_examples,7);
+assert.equal(JSON.stringify(sample),original);
+assert.throws(()=>handle(sample,'/api/schedule/import','POST',malformed,new URLSearchParams(),today));
+assert.equal(JSON.stringify(sample),original);
+handle(sample,'/api/schedule/import','POST',schedule,new URLSearchParams(),today);
+assert.equal(sample.lessons.length,2);assert.deepEqual(sample.reviews,personalReviews);
+assert.deepEqual(sample.tasks.map(t=>t.title),['自己的任务']);
+assert.equal(handle(sample,'/api/schedule/import','POST',schedule,new URLSearchParams(),today).skipped,1);
+console.log('Onboarding seed, backup markers, preview, atomic validation and example replacement passed.');

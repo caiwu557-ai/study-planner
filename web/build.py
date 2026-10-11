@@ -28,11 +28,11 @@ app = (OUT / 'app.js').read_text(encoding='utf-8')
 app = app.replace('sp_rail_collapsed', 'sp_web_rail_collapsed').replace('sp_ddl_', 'sp_web_ddl_')
 app = app.replace('SQLite v${meta.schema_version || 3}', '浏览器存档').replace('SQLite v${meta.schema_version}', '浏览器存档')
 (OUT / 'app.js').write_text(app, encoding='utf-8')
-for name in ['engine.js', 'storage.js', 'entry.js', 'manifest.json', 'icon.svg', 'icon-192.png', 'icon-512.png']:
+for name in ['engine.js', 'storage.js', 'entry.js', 'onboarding.js', 'manifest.json', 'icon.svg', 'icon-192.png', 'icon-512.png']:
     shutil.copyfile(ROOT / 'web' / name, OUT / name)
 shutil.copyfile(ROOT / 'web/styles.css', OUT / 'web.css')
 shutil.copyfile(ROOT / '.agents/skills/study-planner-schedule/SKILL.md', OUT / 'schedule-skill.md')
-assets = ['./', './index.html', './styles.css', './web.css', './app.js', './core.js', './engine.js', './storage.js', './entry.js', './manifest.json', './icon.svg', './icon-192.png', './icon-512.png', './schedule-skill.md']
+assets = ['./', './index.html', './styles.css', './web.css', './app.js', './core.js', './engine.js', './storage.js', './entry.js', './onboarding.js', './manifest.json', './icon.svg', './icon-192.png', './icon-512.png', './schedule-skill.md']
 digest = hashlib.sha256(b''.join((OUT / x.removeprefix('./')).read_bytes() for x in assets if x != './')).hexdigest()[:16]
 sw = (ROOT / 'web/sw.js').read_text(encoding='utf-8').replace('__CACHE__', 'study-planner-web-' + digest).replace('__ASSETS__', json.dumps(assets))
 (OUT / 'sw.js').write_text(sw, encoding='utf-8')

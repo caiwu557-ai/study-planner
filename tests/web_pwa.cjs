@@ -1,3 +1,8 @@
+async function emptyFixture(p){
+  await p.locator('#guideWelcome[open]').waitFor();await p.locator('#guideSkip').click();
+  await p.evaluate(async()=>{const {transact}=await import('./storage.js');const {emptyState}=await import('./engine.js');await transact(s=>{Object.keys(s).forEach(k=>delete s[k]);Object.assign(s,emptyState());});});
+  await p.reload();await p.waitForFunction(()=>document.querySelector('#sidebarMeta').textContent.includes('浏览器存档'));
+}
 const {chromium}=require('playwright');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
@@ -11,7 +16,7 @@ const base=process.argv[2]||'http://127.0.0.1:18770/';
   const swPath=path.join(__dirname,'../site/web/sw.js'),original=fs.readFileSync(swPath,'utf8');let changed=false;
   try {
     const p=await browser.newPage();const errors=[];p.on('pageerror',e=>errors.push(e.message));
-    await p.goto(base+'web/');await p.waitForFunction(()=>document.querySelector('#sidebarMeta').textContent.includes('浏览器存档'));
+    await p.goto(base+'web/');await p.waitForFunction(()=>document.querySelector('#sidebarMeta').textContent.includes('浏览器存档'));await emptyFixture(p);
     await p.evaluate(()=>navigator.serviceWorker.ready);await p.waitForFunction(()=>navigator.serviceWorker.controller);
     const cdp=await p.context().newCDPSession(p);
     const installability=await cdp.send('Page.getInstallabilityErrors');assert.deepEqual(installability.installabilityErrors,[]);

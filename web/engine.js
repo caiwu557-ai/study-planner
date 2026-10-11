@@ -1,5 +1,5 @@
 // Browser counterpart of server.py. Keep rules aligned with the local edition.
-import {addDays, bjISO, bjNow, dueDay, parseISO, parseDue, weekdayCN} from './core.js';
+import {addDays, bjISO, bjNow, dueDay, parseISO, parseDue, startOfWeek, weekdayCN} from './core.js';
 
 const fail = message => { throw new Error(message); };
 export function text(value, max = 500) {
@@ -37,6 +37,17 @@ export function emptyState() {
   return {version:1, meta:{semester_start:'',semester_weeks:18,source:''},
     settings:{appearance:{theme_name:'lemon-salt',accent:'#2E5FA3',accent_2:'#E8C21C',density:'compact',font_scale:'normal'},review_offsets:[1,3,7,14,30],ai:{base_url:'https://api.deepseek.com',model:'deepseek-v4-flash'}},
     lessons:[], reviews:[], tasks:[], ids:{lessons:0,reviews:0,tasks:0}};
+}
+export function seedOnboarding(s,today=bjISO()) {
+  if(s.lessons.length||s.tasks.length||s.reviews.length||s.onboarding)return;
+  const monday=startOfWeek(today),names=['学习方法导论','信息素养','阅读与思考','小组研讨','写作与表达','自主练习','每周回顾'];
+  s.meta={semester_start:monday,semester_weeks:18,source:'新手指引 · 一周虚构示例'};
+  s.onboarding={version:1,status:'pending',step:0};
+  names.forEach((course,i)=>{
+    const day=addDays(monday,i),lesson={id:next(s,'lessons'),lesson_date:day,week:1,weekday:i+1,course,start_section:i%3*2+1,end_section:i%3*2+2,teacher:'示例教师',location:'示例教室',lesson_code:'',topic:day===today?'':'课堂概念与笔记整理（示例）',material_ref:'',review_enabled:1,is_example:true};
+    s.lessons.push(lesson);generateReviews(s,lesson,today);
+  });
+  [['整理课堂笔记（示例）','assignment','pending',2],['提交学习报告（示例）','ddl','pending',3],['完成一段阅读（示例）','task','completed',2],['练习恢复一条任务（示例）','task','deleted',2]].forEach(([title,type,status,days])=>s.tasks.push({id:next(s,'tasks'),title,type,status,course:names[0],planned_date:today,due_date:`${addDays(today,days)}T18:00`,notes:'这是一条练习记录。可以编辑、完成或恢复；载入个人课表时会清除示例记录。',created_at:stamp(),completed_at:status==='completed'?stamp():'',is_example:true}));
 }
 const stamp = () => {const now=bjNow();return `${bjISO(now)}T${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;};
 const daysBetween = (a,b) => Math.round((Date.parse(`${a}T00:00:00Z`)-Date.parse(`${b}T00:00:00Z`))/86400000);
@@ -154,11 +165,13 @@ export function validateSchedule(p) {
   return {lessons,metadata:{semester_start:start,semester_weeks:weeks,source:text(m.source,500)}};
 }
 function importSchedule(s,p,preview) {
-  const {lessons,metadata}=validateSchedule(p),existing=new Set(s.lessons.map(lessonKey)),wasEmpty=!existing.size;let added=0,skipped=0;
+  const {lessons,metadata}=validateSchedule(p),sampleIds=new Set(s.lessons.filter(l=>l.is_example).map(l=>l.id)),remaining=s.lessons.filter(l=>!l.is_example),existing=new Set(remaining.map(lessonKey)),wasEmpty=!existing.size;let added=0,skipped=0;
+  const replaced_examples=sampleIds.size;
+  if(!preview){s.lessons=remaining;s.reviews=s.reviews.filter(r=>!sampleIds.has(r.lesson_id));s.tasks=s.tasks.filter(t=>!t.is_example);}
   for(const l of lessons){const key=lessonKey(l);if(existing.has(key)){skipped++;continue;}existing.add(key);added++;
     if(!preview)s.lessons.push({...l,id:next(s,'lessons'),topic:'',lesson_code:'',material_ref:'',review_enabled:1});}
   if(!preview&&wasEmpty)s.meta=metadata;
-  const dates=lessons.map(l=>l.lesson_date).sort();return {total:lessons.length,added,skipped,start_date:dates[0],end_date:dates.at(-1),sample:lessons.slice(0,5)};
+  const dates=lessons.map(l=>l.lesson_date).sort();return {total:lessons.length,added,skipped,replaced_examples,start_date:dates[0],end_date:dates.at(-1),sample:lessons.slice(0,5)};
 }
 export function appearance(p) {
   const def=emptyState().settings.appearance,clean={};
@@ -237,6 +250,7 @@ export function validateBackup(p) {
   object(p);if(p.format!=='study-planner-browser-backup'||p.version!==1)fail('备份格式或版本不支持');
   const raw=object(p.data);if(raw.version!==1)fail('存档版本不支持');
   const s=emptyState(),meta=object(raw.meta),config=object(raw.settings);
+  if(raw.onboarding){const o=object(raw.onboarding);if(o.version!==1||!['pending','running','dismissed','done'].includes(o.status))fail('指引状态无效');s.onboarding={version:1,status:o.status,step:integer(o.step,0,13,'指引步骤')};}
   s.meta={semester_start:date(meta.semester_start),semester_weeks:integer(meta.semester_weeks,1,54,'学期周数'),source:text(meta.source,500)};
   s.settings={appearance:appearance(object(config.appearance)),review_offsets:offsets(config.review_offsets),ai:aiConfig(object(config.ai))};
   const idsets={};
@@ -245,11 +259,13 @@ export function validateBackup(p) {
     const ids=new Set();idsets[table]=ids;
     s[table]=raw[table].map(item=>{
       object(item);const id=integer(item.id,1,Number.MAX_SAFE_INTEGER,'记录 ID');if(ids.has(id))fail('备份有重复 ID');ids.add(id);
-      if(table==='lessons'){const value=lessonPayload(item);return {...enrichLesson(s,value),id,week:integer(item.week,1,10000,'课程周次'),review_enabled:integer(item.review_enabled,0,1,'复习开关'),material_ref:text(item.material_ref,1000)};}
+      if(item.is_example!==undefined&&typeof item.is_example!=='boolean')fail('示例标记无效');
+      const marker=item.is_example===true?{is_example:true}:{};
+      if(table==='lessons'){const value=lessonPayload(item);return {...enrichLesson(s,value),id,week:integer(item.week,1,10000,'课程周次'),review_enabled:integer(item.review_enabled,0,1,'复习开关'),material_ref:text(item.material_ref,1000),...marker};}
       const status=text(item.status,20);if(!(table==='reviews'?['pending','completed']:['pending','completed','deleted']).includes(status))fail('备份状态无效');
       const created_at=timestamp(item.created_at),completed_at=timestamp(item.completed_at);
       if(status==='completed'&&!completed_at)fail('已完成记录缺少完成时间');
-      if(table==='tasks')return {...taskPayload(item),id,status,created_at,completed_at};
+      if(table==='tasks')return {...taskPayload(item),id,status,created_at,completed_at,...marker};
       return {id,lesson_id:integer(item.lesson_id,1,Number.MAX_SAFE_INTEGER,'课程 ID'),stage:integer(item.stage,1,366,'复习阶段'),due_date:date(item.due_date,'复习日期',true),status,created_at,completed_at};
     });
     s.ids[table]=Math.max(integer(object(raw.ids)[table],0,Number.MAX_SAFE_INTEGER-1,'记录序号'),[...ids].reduce((max,id)=>Math.max(max,id),0));
