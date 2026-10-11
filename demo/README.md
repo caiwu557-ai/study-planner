@@ -11,3 +11,20 @@ GitHub Pages 部署生成的 `site/`。构建使用 Python 标准库；访客只
 本地预览：`python demo/build.py site`，然后在 `site/` 中运行 `python -m http.server`。界面检查：`node tests/demo_ui.cjs <预览网址>`，需可用 Playwright；可通过 `CHROME_PATH` 指定浏览器。
 
 部署由 `.github/workflows/pages.yml` 完成；GitHub Pages 来源选择 GitHub Actions。
+
+## 嵌入其他网页
+
+这不是 GIF 或视频，而是在 iframe 中运行真实 HTML/CSS/JavaScript 前端，再按脚本模拟点击、输入和界面反馈。`embed.html` 是独立播放器，可嵌入外部网站；播放器内部与演示前端保持同源，外部宿主不需要发送跨域控制消息。
+
+```html
+<iframe
+  src="https://caiwu557-ai.github.io/study-planner/embed.html?scene=todos"
+  title="Study Planner 待办功能演示"
+  width="100%"
+  height="720"
+  loading="lazy"
+  style="border:0;border-radius:16px;"
+></iframe>
+```
+
+`scene` 可选：`home`（首页）、`calendar`（日历）、`reviews`（复习）、`todos`（待办）、`ddls`（到期）、`settings`（设置）。不指定时展示首页。支持自动播放、暂停、重播与减少动画偏好；只有演示窗口内的内容会滚动，脚本不滚动外层网页。需要可执行 HTML iframe 的宿主；GitHub README 不支持这种 iframe 嵌入，可使用普通演示链接。

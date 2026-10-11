@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Study Planner · 嵌入演示</title>
+<style>*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;font:13px/1.5 "Microsoft YaHei",sans-serif;background:#f1f5fb;color:#6d7789}.screen{position:relative;height:calc(100% - 48px);overflow:hidden}iframe{position:absolute;width:1280px;height:900px;border:0;transform-origin:top left;pointer-events:none}.bar{height:48px;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #dce3ee;background:white}#status{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}button{border:0;background:transparent;color:#2e5fa3;cursor:pointer;white-space:nowrap}button:focus-visible{outline:2px solid #2e5fa3;outline-offset:3px}</style></head>
+<body><div class="screen"><iframe title="Study Planner 自动功能演示" tabindex="-1" inert></iframe></div><div class="bar"><span id="status">虚构数据 · 自动操作演示</span><div><button id="pause">暂停</button><button id="replay">重播</button></div></div>
+<script>
+const scenes=['home','calendar','reviews','todos','ddls','settings'];
+const requested=new URLSearchParams(location.search).get('scene');
+const scene=scenes.includes(requested)?requested:'home',frame=document.querySelector('iframe');
+frame.src='./app/?scene='+scene;
+let paused=matchMedia('(prefers-reduced-motion:reduce)').matches,visible=false;
+function command(){frame.contentWindow?.postMessage({playDemo:visible&&!paused&&!document.hidden},location.origin)}
+function label(){document.querySelector('#pause').textContent=paused?'播放':'暂停'}label();
+new IntersectionObserver(entries=>{visible=entries[0].intersectionRatio>.25;command()},{threshold:[0,.25]}).observe(frame.parentElement);
+new ResizeObserver(()=>{const box=frame.parentElement,s=Math.min(box.clientWidth/1280,box.clientHeight/900);frame.style.transform=`scale(${s})`;frame.style.left=(box.clientWidth-1280*s)/2+'px';frame.style.top=(box.clientHeight-900*s)/2+'px'}).observe(frame.parentElement);
+document.querySelector('#pause').onclick=()=>{paused=!paused;label();command()};
+document.querySelector('#replay').onclick=()=>{frame.contentWindow.postMessage({playDemo:false},location.origin);paused=false;label();command()};
+window.addEventListener('message',e=>{if(e.origin!==location.origin||e.source!==frame.contentWindow)return;if(e.data?.demoReady)command();if(typeof e.data?.text==='string')document.querySelector('#status').textContent=e.data.text});
+document.addEventListener('visibilitychange',command);
+</script></body></html>

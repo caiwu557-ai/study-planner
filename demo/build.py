@@ -24,6 +24,7 @@ for name in ['adapter.js', 'director.js']:
     shutil.copyfile(ROOT / 'demo' / name, app / name)
 shutil.copyfile(ROOT / '.agents/skills/study-planner-schedule/SKILL.md', app / 'schedule-skill.md')
 shutil.copyfile(ROOT / 'demo/index.html', OUT / 'index.html')
+shutil.copyfile(ROOT / 'demo/embed.html', OUT / 'embed.html')
 with tempfile.TemporaryDirectory(prefix='sp-pages-') as directory:
     temp = Path(directory)
     server.DATA_DIR = temp
